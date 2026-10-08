@@ -163,11 +163,19 @@ def growth_dependent_essential_reactions(cobra_model, growth_rate=1.0):
     max_growth = cobra_model.optimize()[biomass.id]
     max_growth_rate = max_growth * growth_rate
     essential_reactions = set()
-    deletions = single_reaction_deletion(cobra_model, method='fba')
-    reactions_knockout_growth = deletions.loc[:, :]['growth']
-    for r, g in reactions_knockout_growth.items():
-        reaction = cobra_model.reactions.get_by_id(list(r)[0])
-        if isnan(g) or g < CONST_EPSILON or (g + CONST_EPSILON < max_growth_rate):
+    deletions = single_reaction_deletion(cobra_model, method='fba', processes=1)
+    # cobra>=0.26 returns an integer index with reaction ids in an 'ids' column;
+    # older cobra used frozenset reaction ids as the DataFrame index.
+    if 'ids' in deletions.columns:
+        knockout_results = (
+            (reaction_ids, growth)
+            for reaction_ids, growth in zip(deletions['ids'], deletions['growth'])
+        )
+    else:
+        knockout_results = deletions['growth'].items()
+    for reaction_ids, growth in knockout_results:
+        reaction = cobra_model.reactions.get_by_id(next(iter(reaction_ids)))
+        if isnan(growth) or growth < CONST_EPSILON or (growth + CONST_EPSILON < max_growth_rate):
             essential_reactions.add(reaction)
     return essential_reactions
 
