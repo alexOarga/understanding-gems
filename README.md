@@ -5,7 +5,6 @@ The scripts reproduce the main experiments and results presented in the study, w
 
 - Identify essential, redundant reactions and dead reactions at optimal or suboptimal growth.
 - Compute bottleneck reactions limiting optimal growth.
-- Explain gene essentiality in terms of reaction redundancy.
 
 ## 📁 Repository Contents
 
@@ -43,12 +42,12 @@ pip install -r requirements.txt
     ```bash
     python growth_bottlenecks.py --models <model-path-1.xml> <model-path-2.xml> ...
     ```
-3. For a batch analysis of models, run:
+3. To compute reaction sets for one or more models (at a given growth rate), run:
     ```bash
     python compute_reactions_sets.py --models <model-path-1.xml> <model-path-2.xml> ...
     ```
 
-4. For a single model analysis, run the following pointing to the model file:
+4. To compute reaction sets across growth rates for a single model, run:
     ```bash
     python compute_reactions_across_growth.py <path-to-your-model.xml>
     ```
