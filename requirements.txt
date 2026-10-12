@@ -1,6 +1,6 @@
-cobra==0.16.0
-contrabass @ git+https://github.com/openCONTRABASS/CONTRABASS@fb5845d593d1dc81b3374e4bf160d228f2c82268
+cobra>=0.26.0
+contrabass @ git+https://github.com/openCONTRABASS/CONTRABASS@1dbb326d69b22be19bd146973c9192220e783b10
 Pyomo==6.6.2
+numpy<2
 networkx==3.2.1
 matplotlib==3.9.2
-numpy==1.23.5

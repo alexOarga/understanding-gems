@@ -192,14 +192,20 @@ def pyomo_min(model, BIOMASS, max_growth, flex, verbose = True):
     m.objective = Objective(expr = sum([m.g[r] for r in FLEXIBLE]),
                             sense = minimize)
 
-    #print("starting ...")
-    solver = SolverFactory('gurobi')
-    #solver.options['MIPFocus'] = 3
-    solver.options['Heuristics'] = 0.1
-    solver.options['TimeLimit'] = 600 # 10 minutes
-    #solver.options['MIPGap'] = 5e-3
-    #solver.options['IntFeasTol'] = 1e-7
-    #solver.options['mip limits solutions'] = 1
+    # Prefer Gurobi when available; fall back to CBC (already required by the scripts).
+    if SolverFactory('gurobi').available(exception_flag=False):
+        solver = SolverFactory('gurobi')
+        #solver.options['MIPFocus'] = 3
+        solver.options['Heuristics'] = 0.1
+        solver.options['TimeLimit'] = 600  # 10 minutes
+        #solver.options['MIPGap'] = 5e-3
+        #solver.options['IntFeasTol'] = 1e-7
+        #solver.options['mip limits solutions'] = 1
+    else:
+        solver = SolverFactory('cbc')
+        # CBC is slower than Gurobi on these MILPs; keep a short cutoff for local runs.
+        solver.options['sec'] = 60
+        solver.options['ratio'] = 0.05
     #results = solver.solve(m, tee=True)
     results = solver.solve(m)
     if verbose:
