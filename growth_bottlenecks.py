@@ -32,10 +32,10 @@ def compare_bounds(reactions_list, L, U, tolerance):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run FVA to compute the number of growth limitting reactions (on upper or lower bound).")
+    parser = argparse.ArgumentParser(description="Compute the number of growth bottlenecks (on upper or lower bound).")
     parser.add_argument("--models", nargs='*', help="List of model path to analyze")
     parser.add_argument("--tolerance", type=float, default=1e-9, help="Tolerance for bound comparison")
-    parser.add_argument("--output", default="fva.csv", help="CSV file to write the results to")
+    parser.add_argument("--output", default="num_bottlenecks.csv", help="CSV file to write the results to")
 
     args = parser.parse_args()
 

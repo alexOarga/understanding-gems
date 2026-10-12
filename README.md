@@ -9,16 +9,17 @@ The scripts reproduce the main experiments and results presented in the study, w
 
 ## 📁 Repository Contents
 
-- ```growth_limiting_reactions.py```
+- ```growth_bottlenecks.py```
 Computes the number of bottleneck reactions limiting optimal growth 
 using Flux Variability Analysis (FVA) as described in the paper.
 
-- ```generate_sets.py```
-Processes a list of Genome-Scale Models (GEMs) and computes the functional classification of reactions for each model (essential, redundant, dead).
+- ```compute_reactions_sets.py```
+Processes a list of Genome-Scale Models (GEMs) and computes the functional classification of reactions for each model (essential, redundant, dead), as well as the size of the minimum set of reactions for growth.
 
-- ```generate_single.py```
+- ```compute_reactions_across_growth.py```
 Computes the functional classification of reactions for a single GEM
-for different ranges of growth rates, identifying essential, redundant, and dead reactions.
+for different ranges of growth rates, identifying essential, redundant, and dead reactions,
+as well as the minimum number of reactions for the given growth rate.
 
 ## ⚙️ Requirements
 
@@ -38,19 +39,18 @@ pip install -r requirements.txt
 
 1. Place your genome-scale models (in SBML or JSON format) in a directory.
 
-2. For reactions limiting growth, run:
- run:
+2. For growth bottlenecks, run:
     ```bash
-    python growth_limiting_reactions.py --models <model-path-1.xml> <model-path-2.xml> ...
+    python growth_bottlenecks.py --models <model-path-1.xml> <model-path-2.xml> ...
     ```
 3. For a batch analysis of models, run:
     ```bash
-    python generate_sets.py --models <model-path-1.xml> <model-path-2.xml> ...
+    python compute_reactions_sets.py --models <model-path-1.xml> <model-path-2.xml> ...
     ```
 
 4. For a single model analysis, run the following pointing to the model file:
     ```bash
-    python generate_single.py <path-to-your-model.xml>
+    python compute_reactions_across_growth.py <path-to-your-model.xml>
     ```
 
 ## 📄 License

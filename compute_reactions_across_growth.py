@@ -17,7 +17,7 @@ from math import isnan
 
 from contrabass import CobraMetabolicModel
 from pyomo_utils import pyomo_flux_balance_analysis, pyomo_min
-from generate_sets import *
+from compute_reactions_sets import *
 from pyomo.environ import *
 from pyomo.gdp import *
 
@@ -25,7 +25,7 @@ from pyomo.gdp import *
 def main():
     CONST_EPSILON = 1e-08 # Default epsilon value
 
-    parser = argparse.ArgumentParser(description="Run functional classification of reactions for a single GEM")
+    parser = argparse.ArgumentParser(description="Run functional classification of reactions for a single GEM across growth rates")
     parser.add_argument("path", help="Path to the model files")
     #parser.add_argument("--compute-minimal", action="store_true", help="Whether to compute minimal sets")
     #parser.add_argument("--print-minimal-error", action="store_true", help="Whether to print minimal error")
