@@ -49,11 +49,12 @@ def main():
     # get model_name without extension
     model_name = os.path.splitext(model_name)[0]
 
-    print("ModelID\tER\tRR\tDR\tFR\tRG_FBA\tMRG")
+    print("ModelID\tGrowthRate\tER\tRR\tDR\tFR\tRG_FBA\tMRG")
     for i in np.arange(0.0, 1.05, 0.05):
+        print(f"Computing reactions sets forgrowth rate: {i:.2f}", flush=True)
         ER, RR, DR, FR, RG_FBA, MRG = computation_minimum_reduced_sets(
             model_dir, model_name, growth_rate=i)
-        print(f"{model_name}\t{len(ER)}\t{len(RR)}\t{len(DR)}\t{len(FR)}\t{len(RG_FBA)}\t{len(MRG)}")
+        print(f"{model_name}\t{i:.2f}\t{len(ER)}\t{len(RR)}\t{len(DR)}\t{len(FR)}\t{len(RG_FBA)}\t{len(MRG)}")
 
 if __name__ == "__main__":
     main()

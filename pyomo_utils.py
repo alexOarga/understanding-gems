@@ -5,6 +5,7 @@ import pandas as pd
 import shutil
 import sys
 import os.path
+import warnings
 
 from pyomo.environ import *
 from pyomo.gdp import *
@@ -202,6 +203,12 @@ def pyomo_min(model, BIOMASS, max_growth, flex, verbose = True):
         #solver.options['IntFeasTol'] = 1e-7
         #solver.options['mip limits solutions'] = 1
     else:
+        warnings.warn(
+            "Gurobi not available; falling back to CBC for local debugging. "
+            "We recommend using Gurobi for reproducible results.",
+            UserWarning,
+            stacklevel=2,
+        )
         solver = SolverFactory('cbc')
         # CBC is slower than Gurobi on these MILPs; keep a short cutoff for local runs.
         solver.options['sec'] = 60
