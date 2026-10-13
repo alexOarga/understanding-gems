@@ -4,6 +4,7 @@
 The scripts reproduce the main experiments and results presented in the study, which introduces a novel method to classify metabolic reactions based on their functional role in the production of growth. This includes:
 
 - Identify essential, redundant reactions and dead reactions at optimal or suboptimal growth.
+- Compute the minimum set of reactions for a given growth rate.
 - Compute bottleneck reactions limiting optimal growth.
 
 ## 📁 Repository Contents
