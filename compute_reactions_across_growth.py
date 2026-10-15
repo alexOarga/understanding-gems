@@ -31,6 +31,10 @@ def main():
     #parser.add_argument("--print-minimal-error", action="store_true", help="Whether to print minimal error")
     #parser.add_argument("--output", default="output.csv", help="Output CSV filename")
     parser.add_argument("--epsilon", type=float, default=CONST_EPSILON, help="Epsilon constant used for numerical tolerance")
+    parser.add_argument("--time-limit", type=float, default=600,
+                        help="Solver time limit in seconds (default: 600)")
+    parser.add_argument("--ratio", type=float, default=1e-4,
+                        help="MIP gap / CBC ratio (default: 1e-4, Gurobi's default)")
     
     args = parser.parse_args()
     CONST_EPSILON = args.epsilon  # Set it based on CLI input
@@ -49,11 +53,15 @@ def main():
     # get model_name without extension
     model_name = os.path.splitext(model_name)[0]
 
+    print(f"Using time limit: {args.time_limit}s")
+    print(f"Using ratio (MIP gap): {args.ratio}")
     print("ModelID\tGrowthRate\tER\tRR\tDR\tFR\tRG_FBA\tMRG")
     for i in np.arange(0.0, 1.05, 0.05):
         print(f"Computing reactions sets forgrowth rate: {i:.2f}", flush=True)
         ER, RR, DR, FR, RG_FBA, MRG = computation_minimum_reduced_sets(
-            model_dir, model_name, growth_rate=i)
+            model_dir, model_name, growth_rate=i,
+            time_limit=args.time_limit, ratio=args.ratio,
+        )
         print(f"{model_name}\t{i:.2f}\t{len(ER)}\t{len(RR)}\t{len(DR)}\t{len(FR)}\t{len(RG_FBA)}\t{len(MRG)}")
 
 if __name__ == "__main__":

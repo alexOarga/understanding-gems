@@ -284,7 +284,7 @@ def compute_reactions_sets(MODEL, growth_rate=1.0):
         RG_FBA_id
         
 
-def computation_minimum_reduced_sets(PATH, M, growth_rate=1.0):
+def computation_minimum_reduced_sets(PATH, M, growth_rate=1.0, time_limit=600, ratio=1e-4):
     start = current_milli_time()
     MODEL = os.path.join(PATH, M + ".xml")
     print("    Computing set of reactions for growth in model: ", M)
@@ -303,7 +303,10 @@ def computation_minimum_reduced_sets(PATH, M, growth_rate=1.0):
 
     print("    Computing minimum set of reactions for model: ", M)
     redundant_reactions = [cbmodel.model().reactions.get_by_id(rid) for rid in redundant_reactions_ids]
-    res_min = pyomo_min(cbmodel.model(), biomass.id, max_growth, redundant_reactions, verbose = False)
+    res_min = pyomo_min(
+        cbmodel.model(), biomass.id, max_growth, redundant_reactions,
+        verbose=False, time_limit=time_limit, ratio=ratio,
+    )
     if res_min is None:
         print("    #### INFEASIBLE ####    ")
         return
@@ -336,6 +339,10 @@ def main():
     parser = argparse.ArgumentParser(description="Compute sets of reactions for metabolic models.")
     parser.add_argument("--models", nargs='*', help="List of model IDs to run (default: full predefined list)")
     parser.add_argument("--growth-rate", type=float, default=1.0, help="Growth rate for optimization (1.0 = optimal)")
+    parser.add_argument("--time-limit", type=float, default=600,
+                        help="Solver time limit in seconds (default: 600)")
+    parser.add_argument("--ratio", type=float, default=1e-4,
+                        help="MIP gap / CBC ratio (default: 1e-4, Gurobi's default)")
     # parser.add_argument("--compute-minimal", action="store_true", help="Enable minimal computation flag")
     # parser.add_argument("--print-minimal-error", action="store_true", help="Print minimal error messages")
 
@@ -349,6 +356,7 @@ def main():
             raise ValueError("Only XML model files are supported.")
         # separate directory and file name
 
+    print(f"Using growth rate: {args.growth_rate}")
     print("ModelID\tER\tRR\tDR\tFR\tRG_FBA\tMRG")
 
     for path in models:
@@ -360,7 +368,9 @@ def main():
         ER, RR, DR, FR, RG_FBA, MRG = computation_minimum_reduced_sets(
             model_dir,
             model_name,
-            growth_rate=args.growth_rate
+            growth_rate=args.growth_rate,
+            time_limit=args.time_limit,
+            ratio=args.ratio,
         )
         duration = time.time() - start_time
         print(f"{model_name}\t{len(ER)}\t{len(RR)}\t{len(DR)}\t{len(FR)}\t{len(RG_FBA)}\t{len(MRG)}")

@@ -35,23 +35,58 @@ The essential dependencies can be installed with:
 pip install -r requirements.txt
 ```
 
+## 🚀 Quickstart
+
+Download a small SBML metabolic model using command line:
+
+```bash
+curl -O https://bigg.ucsd.edu/static/models/e_coli_core.xml
+```
+
+Run analysis:
+```
+python growth_bottlenecks.py --models e_coli_core.xml
+python compute_reactions_sets.py --models e_coli_core.xml
+```
+
 ## 🧪 Reproducing the Results
 
 1. Place your genome-scale models (in SBML or JSON format) in a directory.
 
 2. For growth bottlenecks, run:
     ```bash
-    python growth_bottlenecks.py --models <model-path-1.xml> <model-path-2.xml> ...
+    python growth_bottlenecks.py --models <model-path.xml>
     ```
-3. To compute reaction sets for one or more models (at a given growth rate), run:
+3. To compute reaction sets for one model at optimal growth rate, run:
     ```bash
-    python compute_reactions_sets.py --models <model-path-1.xml> <model-path-2.xml> ...
+    python compute_reactions_sets.py --models <model-path.xml>
+    ```
+4. To compute reactions sets for a custom growth rate you can use the `--growth-rate` param (e.g. `0.5` for 50% of optimal; default is `1.0`):
+    ```bash
+    python compute_reactions_sets.py --models <model-path.xml> --growth-rate 0.5
     ```
 
-4. To compute reaction sets across growth rates for a single model, run:
+## 🔬 Advanced Usage 
+
+For convenience, all previous scripts allow to 
+run analysis on multiple models:
+
+1. For growth bottlenecks, run:
     ```bash
-    python compute_reactions_across_growth.py <path-to-your-model.xml>
+    python growth_bottlenecks.py --models <model-path-1.xml> <model-path-2.xml> ...
     ```
+2. To compute reaction sets for one or more models (at a given growth rate), run:
+    ```bash
+    python compute_reactions_sets.py 
+    --growth-rate 1.0 
+    --models <model-path-1.xml> <model-path-2.xml> ...
+    ```
+
+You can tune the MILP solver time limit (``--time-limit``, default 600) and MIP optimality gap (``--ratio``, default 1e-4) with the following parameters:
+```bash
+python compute_reactions_sets.py --models <model-path.xml> --time-limit 120 --ratio 0.01
+```
+The same flags are available in `compute_reactions_across_growth.py`.
 
 ## 📄 License
 

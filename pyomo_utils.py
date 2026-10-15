@@ -99,7 +99,7 @@ def test_pyomo_flux_balance_analysis(cobra_model, objective_id, tolerance = 1e-6
             
             
 
-def pyomo_min(model, BIOMASS, max_growth, flex, verbose = True):
+def pyomo_min(model, BIOMASS, max_growth, flex, verbose=True, time_limit=600, ratio=1e-4):
     """
     Solves a linear optimization problem using Pyomo for minimizing a set of flexible reactions 
     subject to constraints on growth and fluxes.
@@ -110,6 +110,8 @@ def pyomo_min(model, BIOMASS, max_growth, flex, verbose = True):
     - max_growth: Maximum growth rate constraint.
     - flex: List of flexible reactions.
     - verbose: (optional) If True, prints solver results (default is True).
+    - time_limit: Solver time limit in seconds (default: 600).
+    - ratio: MIP gap (Gurobi MIPGap / CBC ratio; default: 1e-4, Gurobi's default).
 
     Returns:
     - solution: Dictionary containing flux values for non-zero flux reactions.
@@ -198,44 +200,61 @@ def pyomo_min(model, BIOMASS, max_growth, flex, verbose = True):
         solver = SolverFactory('gurobi')
         #solver.options['MIPFocus'] = 3
         solver.options['Heuristics'] = 0.1
-        solver.options['TimeLimit'] = 600  # 10 minutes
-        #solver.options['MIPGap'] = 5e-3
+        solver.options['TimeLimit'] = time_limit
+        solver.options['MIPGap'] = ratio
         #solver.options['IntFeasTol'] = 1e-7
         #solver.options['mip limits solutions'] = 1
     else:
         warnings.warn(
-            "Gurobi not available; falling back to CBC for local debugging. "
+            "Gurobi not available; falling back to CBC for debugging. "
             "We recommend using Gurobi for reproducible results.",
             UserWarning,
             stacklevel=2,
         )
         solver = SolverFactory('cbc')
-        # CBC is slower than Gurobi on these MILPs; keep a short cutoff for local runs.
-        solver.options['sec'] = 60
-        solver.options['ratio'] = 0.05
+        solver.options['sec'] = time_limit
+        solver.options['ratio'] = ratio
     #results = solver.solve(m, tee=True)
     results = solver.solve(m)
     if verbose:
         results.write()
 
-    '''
-    if (results.solver.status != SolverStatus.ok) or (results.solver.termination_condition != TerminationCondition.optimal):
-        return None
-    '''
-        
+    status = results.solver.status
+    term = results.solver.termination_condition
+    if term == TerminationCondition.maxTimeLimit:
+        warnings.warn(
+            f"pyomo_min: time limit reached (status={status}, termination={term}); "
+            "using the best feasible solution found, if any.",
+            UserWarning,
+            stacklevel=2,
+        )
+    elif status != SolverStatus.ok or term != TerminationCondition.optimal:
+        raise RuntimeError(
+            f"pyomo_min failed: status={status}, termination={term}"
+        )
+
     # generate flux result list [(cobra.reaction, flux(float))]
     solution = {}
     solution_g = {}
     solution_w = {}
     for r in model.reactions:
-        if m.v[r.id]() > CONST_EPSILON or m.v[r.id]() < -CONST_EPSILON:
-            solution[r.id] = m.v[r.id]()
+        v_val = m.v[r.id]()
+        if v_val is None:
+            raise RuntimeError(f"pyomo_min: flux variable v[{r.id}] is None after solve")
+        if v_val > CONST_EPSILON or v_val < -CONST_EPSILON:
+            solution[r.id] = v_val
         else:
             solution[r.id] = 0.0
-            
+
         if r.id in FLEXIBLE:
-            solution_g[r.id] = m.g[r.id]()
-            solution_w[r.id] = m.w[r.id]()
-            
-            
+            g_val = m.g[r.id]()
+            w_val = m.w[r.id]()
+            if g_val is None or w_val is None:
+                raise RuntimeError(
+                    f"pyomo_min: variable g/w for {r.id} is None after solve "
+                    f"(g={g_val}, w={w_val})"
+                )
+            solution_g[r.id] = g_val
+            solution_w[r.id] = w_val
+
     return solution, solution_g, solution_w
